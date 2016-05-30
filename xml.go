@@ -70,8 +70,7 @@ done:
 	return []byte(*s), err
 }
 
-func anyxmlWithDateFormat(dateFormat string,m map[string]interface{}, rootTag ...string) ([]byte, error) {
-//	fmt.Println("===============================>进入xml.go的func anyxmlWithDateFormat()")
+func anyxmlWithDateFormat(dateFormat string, m map[string]interface{}, rootTag ...string) ([]byte, error) {
 	var err error
 	s := new(string)
 	p := new(pretty) // just a stub
@@ -87,24 +86,23 @@ func anyxmlWithDateFormat(dateFormat string,m map[string]interface{}, rootTag ..
 					switch v.(type) {
 					case map[string]interface{}: // noop
 					default: // anything else
-						err = mapToXmlIndentWithDateFormat(dateFormat,false, s, DefaultRootTag, m, p)
+						err = mapToXmlIndentWithDateFormat(dateFormat, false, s, DefaultRootTag, m, p)
 						goto done
 					}
 				}
 			}
-			err = mapToXmlIndentWithDateFormat(dateFormat,false, s, key, value, p)
+			err = mapToXmlIndentWithDateFormat(dateFormat, false, s, key, value, p)
 		}
 	} else if len(rootTag) == 1 {
-		err = mapToXmlIndentWithDateFormat(dateFormat,false, s, rootTag[0], m, p)
+		err = mapToXmlIndentWithDateFormat(dateFormat, false, s, rootTag[0], m, p)
 	} else {
-		err = mapToXmlIndentWithDateFormat(dateFormat,false, s, DefaultRootTag, m, p)
+		err = mapToXmlIndentWithDateFormat(dateFormat, false, s, DefaultRootTag, m, p)
 	}
 done:
 	return []byte(*s), err
 }
 
-func anyxmlIndentWithDateFormat(dateFormat string,m map[string]interface{},prefix string, indent string, rootTag ...string) ([]byte, error) {
-//	fmt.Println("===============================>进入xml.go的func anyxmlWithDateFormat()")
+func anyxmlIndentWithDateFormat(dateFormat string, m map[string]interface{}, prefix string, indent string, rootTag ...string) ([]byte, error) {
 	var err error
 	s := new(string)
 	p := new(pretty) // just a stub
@@ -120,17 +118,17 @@ func anyxmlIndentWithDateFormat(dateFormat string,m map[string]interface{},prefi
 					switch v.(type) {
 					case map[string]interface{}: // noop
 					default: // anything else
-						err = mapToXmlIndentWithDateFormat(dateFormat,true, s, DefaultRootTag, m, p)
+						err = mapToXmlIndentWithDateFormat(dateFormat, true, s, DefaultRootTag, m, p)
 						goto done
 					}
 				}
 			}
-			err = mapToXmlIndentWithDateFormat(dateFormat,true, s, key, value, p)
+			err = mapToXmlIndentWithDateFormat(dateFormat, true, s, key, value, p)
 		}
 	} else if len(rootTag) == 1 {
-		err = mapToXmlIndentWithDateFormat(dateFormat,true, s, rootTag[0], m, p)
+		err = mapToXmlIndentWithDateFormat(dateFormat, true, s, rootTag[0], m, p)
 	} else {
-		err = mapToXmlIndentWithDateFormat(dateFormat,true, s, DefaultRootTag, m, p)
+		err = mapToXmlIndentWithDateFormat(dateFormat, true, s, DefaultRootTag, m, p)
 	}
 done:
 	return []byte(*s), err
@@ -338,8 +336,7 @@ func mapToXmlIndent(doIndent bool, s *string, key string, value interface{}, pp 
 
 // where the work actually happens
 // returns an error if an attribute is not atomic
-func mapToXmlIndentWithDateFormat(dateFormat string,doIndent bool, s *string, key string, value interface{}, pp *pretty) error {
-//	fmt.Println("key------------------------------>"+key)
+func mapToXmlIndentWithDateFormat(dateFormat string, doIndent bool, s *string, key string, value interface{}, pp *pretty) error {
 	var endTag bool
 	var isSimple bool
 	p := &pretty{pp.indent, pp.cnt, pp.padding, pp.mapDepth, pp.start}
@@ -347,20 +344,17 @@ func mapToXmlIndentWithDateFormat(dateFormat string,doIndent bool, s *string, ke
 
 	//start tag
 	switch value.(type) {
-	case map[string]interface{}, []byte, string, float64, bool, int, int32, int64, float32,time.Time:
+	case map[string]interface{}, []byte, string, float64, bool, int, int32, int64, float32, time.Time:
 		if doIndent {
 			*s += p.padding
 		}
 		*s += `<` + key
 	}
 
-//	fmt.Println("*s--------------111---------------->"+*s)
 	switch value.(type) {
 	case map[string]interface{}:
-//		fmt.Println("*s--------------进入case1---------------->"+*s)
 		vv := value.(map[string]interface{})
 		lenvv := len(vv)
-		// scan out attributes - keys have prepended hyphen, '-'
 		var cntAttr int
 		for k, v := range vv {
 			if k[:1] == "-" {
@@ -412,7 +406,7 @@ func mapToXmlIndentWithDateFormat(dateFormat string,doIndent bool, s *string, ke
 				}
 			}
 			i++
-			mapToXmlIndentWithDateFormat(dateFormat,doIndent, s, k, v, p)
+			mapToXmlIndentWithDateFormat(dateFormat, doIndent, s, k, v, p)
 			switch v.(type) {
 			case []interface{}: // handled in []interface{} case
 			default:
@@ -425,37 +419,29 @@ func mapToXmlIndentWithDateFormat(dateFormat string,doIndent bool, s *string, ke
 		p.mapDepth--
 		endTag = true
 	case []interface{}:
-//		fmt.Println("*s--------------进入case2---------------->"+*s)
 		for _, v := range value.([]interface{}) {
 			if doIndent {
 				p.Indent()
 			}
-			mapToXmlIndentWithDateFormat(dateFormat,doIndent, s, key, v, p)
+			mapToXmlIndentWithDateFormat(dateFormat, doIndent, s, key, v, p)
 			if doIndent {
 				p.Outdent()
 			}
 		}
 		return nil
 	case nil:
-//		fmt.Println("*s--------------进入case3---------------->"+*s)
-		// terminate the tag
 		*s += "<" + key
 		break
 	default: // handle anything - even goofy stuff
-//		fmt.Println("*s--------------进入case4---------------->"+*s)
 		switch value.(type) {
 		case string:
-//			fmt.Println("string.(time.Time) %#v",value)
 			*s += ">" + fmt.Sprintf("%v", template.HTMLEscapeString(value.(string)))
 		case float64, bool, int, int32, int64, float32:
-//			fmt.Println("float64.(time.Time) %#v",value)
 			*s += ">" + fmt.Sprintf("%v", value)
 		case []byte: // NOTE: byte is just an alias for uint8
 			// similar to how xml.Marshal handles []byte structure members
-//			fmt.Println("[]byte.(time.Time) %#v",value)
 			*s += ">" + string(value.([]byte))
 		case time.Time:
-//			fmt.Println("value.(time.Time) %#v",value)
 			*s += ">" + (value.(time.Time)).Format(dateFormat)
 		default:
 			var v []byte
@@ -485,7 +471,7 @@ func mapToXmlIndentWithDateFormat(dateFormat string,doIndent bool, s *string, ke
 			}
 		}
 		switch value.(type) {
-		case map[string]interface{}, []byte, string, float64, bool, int, int32, int64, float32,time.Time:
+		case map[string]interface{}, []byte, string, float64, bool, int, int32, int64, float32, time.Time:
 			*s += `</` + key + ">"
 		}
 	} else if UseGoEmptyElementSyntax {
